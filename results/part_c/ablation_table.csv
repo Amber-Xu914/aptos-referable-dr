@@ -1,0 +1,7 @@
+experiment,base,change,n_seeds,n_val,auroc,auroc_ci_lo,auroc_ci_hi,auroc_g1_vs_ref,auroc_no_conflict,threshold_sens85,sens_at_t,spec_at_sens85,sens_g2,sens_g3,sens_g4,best_epoch,minutes
+E0_baseline,-,baseline,1,549.0,0.9828,0.974,0.9897,0.9036,0.9843,0.7514,0.8507,0.9512,0.8389,1.0,0.7907,6.0,7.824
+E1_clahe,E0_baseline,+ CLAHE preprocessing,1,549.0,0.9819,0.9725,0.9899,0.9021,0.9842,0.8661,0.8507,0.9604,0.8322,0.9655,0.8372,7.0,7.7287
+E2_augment,E1_clahe,+ augmentation,1,549.0,0.9811,0.9716,0.9884,0.8943,0.9837,0.6266,0.8552,0.9543,0.8322,0.9655,0.8605,10.0,7.1014
+E3_classweight,E2_augment,+ class weight,1,549.0,0.9785,0.9676,0.9874,0.8777,0.9806,0.6416,0.8507,0.9512,0.8121,0.9655,0.907,9.0,6.5802
+E3b_oversample,E2_augment,+ oversampling (instead of class weight),1,549.0,0.9793,0.9687,0.9877,0.8859,0.9823,0.7301,0.8507,0.9634,0.8121,0.9655,0.907,9.0,6.4574
+E4_bengraham,E2_augment,Ben Graham instead of CLAHE,1,549.0,0.9801,0.9703,0.9881,0.888,0.9815,0.4651,0.8507,0.9482,0.8188,1.0,0.8605,10.0,5.608

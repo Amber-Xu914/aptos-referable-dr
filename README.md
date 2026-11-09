@@ -67,10 +67,45 @@ from src.preprocess import normalize
 
 img = cv2.cvtColor(cv2.imread(f"data/cache_clahe_512/{id_code}.png"), cv2.COLOR_BGR2RGB)  # uint8 RGB
 img = cv2.resize(img, (384, 384), interpolation=cv2.INTER_AREA)  # if the network needs a smaller input
-# img = augment(img)                                               # train split only
+# img = aug(img)            # aug = src.augment.Augmenter(seed=...); train split only
 x = torch.from_numpy(normalize(img)).permute(2, 0, 1)             # float32, CHW
 ```
 
 `normalize()` also accepts the 1-channel `green` image and repeats it to 3 channels.
 
-Requirements: `pip install -r requirements.txt` (numpy, opencv-python-headless; Colab already has both).
+Requirements: `pip install -r requirements.txt` (Colab already has all of them).
+
+## Augmentation, class imbalance and ablation (Part C)
+
+| file | what it does |
+|---|---|
+| `src/augment.py` | `Augmenter`: random flips, rotation, mild brightness/contrast (inside the field of view only). Train split only. |
+| `src/imbalance.py` | `pos_weight()` for `BCEWithLogitsLoss` (class weight) and `oversampling_weights()` for `WeightedRandomSampler`. Use one, not both. |
+| `src/metrics.py` | Validation metrics for any prediction CSV in the group format: AUROC (+ bootstrap CI), **grade 1 vs 2–4 AUROC**, AUROC without `label_conflict` images, specificity at 85 % sensitivity, sensitivity by grade. |
+| `src/ablation.py` | Trains the CNN once per experiment, changing one thing at a time, and writes the ablation table. |
+
+Experiments (each row changes one thing compared with its `base`):
+
+| experiment | base | change |
+|---|---|---|
+| E0_baseline | – | rgb preprocessing, no augmentation, no imbalance fix |
+| E1_clahe | E0 | + CLAHE preprocessing |
+| E2_augment | E1 | + augmentation |
+| E3_classweight | E2 | + class weight |
+| E3b_oversample | E2 | + oversampling (instead of class weight) |
+| E4_bengraham | E2 | Ben Graham instead of CLAHE |
+
+```bash
+python -m src.ablation                                        # all experiments, seed 9027, 10 epochs
+python -m src.ablation --seeds 1 2 3                          # repeat with several seeds
+python -m src.ablation --only E0_baseline --subset 100 --epochs 1 --out-tag _smoke   # quick check
+python -m src.metrics results/part_a/preds_A_rf_all.csv       # metrics for any prediction file (val rows)
+```
+
+Outputs: `results/part_c/ablation_table.csv` (mean over seeds), `results/part_c/ablation_runs.csv` (per seed), and validation predictions in `results/part_c/preds/` (group CSV format: `image_id, split, true_grade, model_score, model_type`). Checkpoints go to `outputs/part_c/` (not in git). Missing caches (`data/cache_rgb_512`, `data/cache_bengraham_512`) are built automatically from the raw images.
+
+Notes:
+- The CNN is a stand-in (ImageNet-pretrained ResNet-18, 224 px) until B's model is ready. **B:** add your network to `build_model()` in `src/ablation.py` and run with `--model <name>`.
+- The best epoch is chosen by validation AUROC, so absolute validation numbers are slightly optimistic; the comparison between rows is fair because every row is treated the same way.
+- Overall AUROC is inflated by the camera shortcut (grade 0 photos come mostly from different cameras, see Part A). Judge the improvements mainly by **`auroc_g1_vs_ref`**.
+- The test split is never used here. `--predict-test <experiment>` writes test predictions for the frozen final model only, without computing metrics (D evaluates them once).
