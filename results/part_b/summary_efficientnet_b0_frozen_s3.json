@@ -1,0 +1,128 @@
+{
+  "run": "efficientnet_b0_frozen_s3",
+  "model_type": "B_efficientnet_b0_frozen_s3",
+  "model": "efficientnet_b0",
+  "mode": "frozen",
+  "img_size": 384,
+  "params_total": 4008829,
+  "params_trainable": 1281,
+  "best_epoch": 25,
+  "epochs_run": 25,
+  "thresholds": {
+    "sens90": 0.3176378905773163,
+    "youden": 0.16331195831298828
+  },
+  "val": {
+    "auroc": 0.9715677077585255,
+    "auroc_ci": [
+      0.9586681572730675,
+      0.9820650556682128
+    ],
+    "at_sens90": {
+      "threshold": 0.3176378905773163,
+      "sensitivity": 0.9004524886877828,
+      "specificity": 0.9115853658536586,
+      "precision": 0.8728070175438597,
+      "npv": 0.9314641744548287,
+      "f1": 0.8864142538975501,
+      "accuracy": 0.907103825136612,
+      "tp": 199,
+      "fp": 29,
+      "tn": 299,
+      "fn": 22
+    },
+    "at_youden": {
+      "threshold": 0.16331195831298828,
+      "sensitivity": 0.9638009049773756,
+      "specificity": 0.8841463414634146,
+      "precision": 0.848605577689243,
+      "npv": 0.9731543624161074,
+      "f1": 0.902542372881356,
+      "accuracy": 0.9162112932604736,
+      "tp": 213,
+      "fp": 38,
+      "tn": 290,
+      "fn": 8
+    },
+    "auroc_excl_label_conflict": 0.9749387407744339
+  },
+  "runtime": {
+    "load_images_s": 12.62,
+    "train_s": 840.6,
+    "mean_epoch_s": 30.3,
+    "inference_ms_per_image": 6.35,
+    "tta": true,
+    "batch_size": 32,
+    "amp": true,
+    "peak_gpu_mem_gb": 0.98
+  },
+  "hardware": {
+    "python": "3.12.0",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "cpu_count": 24,
+    "colab": false,
+    "torch": "2.6.0+cu124",
+    "torchvision": "0.21.0+cu124",
+    "cuda": true,
+    "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+    "gpu": "NVIDIA GeForce RTX 3060",
+    "gpu_mem_gb": 12.9,
+    "cuda_version": "12.4",
+    "cudnn": 90100,
+    "sklearn": "1.9.1"
+  },
+  "args": {
+    "root": null,
+    "cache": "O:\\Uni\\aptos-referable-dr\\data\\cache_clahe_512",
+    "model": "efficientnet_b0",
+    "mode": "frozen",
+    "name": "efficientnet_b0_frozen_s3",
+    "size": 384,
+    "epochs": 25,
+    "patience": 0,
+    "batch_size": 32,
+    "lr": 0.001,
+    "backbone_lr_mult": 0.1,
+    "weight_decay": 0.0001,
+    "pos_weight": "auto",
+    "drop_conflicts": false,
+    "tta": true,
+    "no_pretrained": false,
+    "workers": 0,
+    "limit": 0,
+    "seed": 3
+  },
+  "test": {
+    "auroc": 0.9818324786324786,
+    "auroc_ci": [
+      0.9728503392226397,
+      0.9891123073423704
+    ],
+    "at_sens90": {
+      "threshold": 0.3176378905773163,
+      "sensitivity": 0.9111111111111111,
+      "specificity": 0.9353846153846154,
+      "precision": 0.9070796460176991,
+      "npv": 0.9382716049382716,
+      "f1": 0.9090909090909091,
+      "accuracy": 0.9254545454545454,
+      "tp": 205,
+      "fp": 21,
+      "tn": 304,
+      "fn": 20
+    },
+    "at_youden": {
+      "threshold": 0.16331195831298828,
+      "sensitivity": 0.9511111111111111,
+      "specificity": 0.8953846153846153,
+      "precision": 0.8629032258064516,
+      "npv": 0.9635761589403974,
+      "f1": 0.904862579281184,
+      "accuracy": 0.9181818181818182,
+      "tp": 214,
+      "fp": 34,
+      "tn": 291,
+      "fn": 11
+    }
+  }
+}
