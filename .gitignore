@@ -222,3 +222,7 @@ __marimo__/
 # Project data and cached images (do not commit)
 data/
 .DS_Store
+
+# Model checkpoints and local run outputs
+outputs/
+*.pt
