@@ -23,7 +23,7 @@ just continues.
    ```bash
    python -m venv .venv
    ```
-   Activate it (`.venv\Scripts\activate` on Windows, `source .venv/bin/activate` on macOS/Linux), then:
+   Activate it on VSCode use ctrl+shift+P go to Python:Select Interpreter and use venv to setup enviroment, then:
    ```bash
    pip install -r part_b/requirments.txt
    ```

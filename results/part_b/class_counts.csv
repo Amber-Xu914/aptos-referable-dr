@@ -1,4 +1,0 @@
-split,grade_0,grade_1,grade_2,grade_3,grade_4,n,referable,prevalence
-train,1263,259,697,134,210,2563,1041,0.406
-val,271,57,149,29,43,549,221,0.403
-test,271,54,153,30,42,550,225,0.409
