@@ -1,0 +1,15 @@
+{
+  "python": "3.12.0",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "cpu_count": 24,
+  "colab": false,
+  "torch": "2.6.0+cu124",
+  "torchvision": "0.21.0+cu124",
+  "cuda": true,
+  "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+  "gpu": "NVIDIA GeForce RTX 3060",
+  "gpu_mem_gb": 12.9,
+  "cuda_version": "12.4",
+  "cudnn": 90100,
+  "sklearn": "1.9.1"
+}

@@ -1,21 +1,22 @@
 """Train one Part B model on the training split and select it on the validation split.
 
 Examples (Colab GPU):
-    python part_b/train.py --model smallcnn --epochs 25                  # 2. CNN from scratch
-    python part_b/train.py --model efficientnet_b0 --mode frozen --epochs 25         # 3. transfer: frozen backbone
-    python part_b/train.py --model efficientnet_b0 --mode finetune --epochs 25        # 3. transfer: fine-tuning
+    python part_b/train.py --model smallcnn --lr 1e-3                              # 2. CNN from scratch
+    python part_b/train.py --model efficientnet_b0 --mode frozen   --lr 1e-3        # 3. transfer: frozen backbone
+    python part_b/train.py --model efficientnet_b0 --mode finetune --lr 1e-3        # 3. transfer: fine-tuning
+    python part_b/train.py --model resnet50 --mode finetune --lr 1e-3               #    (optional second backbone)
 
 What it does:
   * loads splits.csv, checks it (class counts, IDs, leakage) and stops on a hard failure
   * trains on `train` with augmentation, BCE loss (class-balanced via pos_weight), AdamW + cosine LR
-  * after each epoch scores `val`; keeps the checkpoint with the best val AUROC; early stopping
+  * trains every model for 25 epochs (no early stopping unless --patience > 0); after each epoch
+    scores `val` and keeps the checkpoint with the best val AUROC
   * writes results/part_b/preds_B_<run>.csv (val rows, same format as Part A),
     results/part_b/history_<run>.csv and results/part_b/summary_<run>.json
     (val metrics, thresholds chosen on val, parameter counts, runtime, hardware)
 
 The test split is never loaded here. Use final_test.py once the models are frozen.
 """
-
 import argparse
 import math
 import sys
@@ -26,9 +27,9 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from part_b.common import (SEED, add_path_args, check_splits, choose_threshold, evaluate, get_paths, load_splits,
-                           make_dataset, preload, save_json, set_seed, write_preds)
-from part_b.hardware import device, hardware_info, peak_gpu_mem_gb, sync, timer
+from part_b.common import (SEED, add_path_args, check_splits, choose_threshold, evaluate, fmt_time, get_paths,
+                           load_splits, make_dataset, preload, progress, save_json, set_seed, write_preds)
+from part_b.hardware import amp, default_workers, device, hardware_info, peak_gpu_mem_gb, sync, timer
 
 
 def run_name(a):
@@ -43,7 +44,7 @@ def predict(model, loader, dev, tta=True):
     with torch.no_grad():
         for x, _, _ in loader:
             x = x.to(dev, non_blocking=True)
-            with torch.autocast(dev.type, enabled=dev.type == "cuda"):
+            with amp(dev):
                 logit = model(x)
                 if tta:
                     logit = (logit + model(torch.flip(x, dims=[3]))) / 2
@@ -63,7 +64,7 @@ def main(a):
     name = run_name(a)
     dev = device()
     hw = hardware_info()
-    print(f"run {name} on {hw.get('gpu')} | torch {hw.get('torch')}")
+    print(f"run {name} on {dev.type}: {hw.get('gpu')} | torch {hw.get('torch')}")
 
     # 1. data -----------------------------------------------------------------
     df = load_splits(paths.splits)
@@ -80,7 +81,8 @@ def main(a):
 
     times = {}
     with timer(times, "load_images_s"):
-        x_tr, x_va = preload(tr, paths.cache, a.size), preload(va, paths.cache, a.size)
+        x_tr = preload(tr, paths.cache, a.size, desc="loading train images")
+        x_va = preload(va, paths.cache, a.size, desc="loading val images")
     print(f"loaded {len(tr)} train / {len(va)} val images at {a.size}px in {times['load_images_s']}s")
     kw = dict(batch_size=a.batch_size, num_workers=a.workers, pin_memory=dev.type == "cuda",
               persistent_workers=a.workers > 0)
@@ -102,7 +104,7 @@ def main(a):
     warm = len(dl_tr)                             # one epoch of linear warm-up
     sched = torch.optim.lr_scheduler.LambdaLR(
         opt, lambda s: (s + 1) / warm if s < warm else 0.5 * (1 + math.cos(math.pi * (s - warm) / max(1, steps - warm))))
-    scaler = torch.amp.GradScaler(dev.type, enabled=dev.type == "cuda")
+    scaler = torch.amp.GradScaler("cuda", enabled=dev.type == "cuda")
     ckpt = paths.ckpt / f"{name}.pt"
 
     history, best, bad_epochs = [], -1.0, 0
@@ -113,14 +115,17 @@ def main(a):
         model.train(); keep_frozen_bn_eval(model)
         sync(); t0 = time.perf_counter()
         losses = []
-        for x, y, _ in dl_tr:
+        bar = progress(dl_tr, desc=f"{name} | epoch {ep}/{a.epochs}", leave=False, unit="batch")
+        for x, y, _ in bar:
             x, y = x.to(dev, non_blocking=True), y.to(dev, non_blocking=True)
             opt.zero_grad(set_to_none=True)
-            with torch.autocast(dev.type, enabled=dev.type == "cuda"):
+            with amp(dev):
                 loss = loss_fn(model(x).float(), y)
             scaler.scale(loss).backward()
             scaler.step(opt); scaler.update(); sched.step()
             losses.append(loss.item())
+            if hasattr(bar, "set_postfix"):
+                bar.set_postfix(loss=f"{np.mean(losses):.4f}")
         sync(); ep_s = time.perf_counter() - t0
         s_va = predict(model, dl_va, dev, tta=False)
         auc = roc_auc_score(va.referable, s_va)
@@ -133,9 +138,13 @@ def main(a):
             torch.save(dict(state=model.state_dict(), model=a.model, mode=mode, size=a.size, epoch=ep), ckpt)
         else:
             bad_epochs += 1
-        print(f"ep {ep:3d}  train loss {np.mean(losses):.4f}  val loss {vloss:.4f}  val AUROC {auc:.4f}"
-              f"{'  *' if improved else ''}  ({ep_s:.0f}s)", flush=True)
-        if bad_epochs >= a.patience:
+        elapsed = time.perf_counter() - t_train
+        left = elapsed / ep * (a.epochs - ep)
+        filled = round(20 * ep / a.epochs)
+        print(f"[{'#' * filled}{'.' * (20 - filled)}] epoch {ep:2d}/{a.epochs}  train loss {np.mean(losses):.4f}  "
+              f"val loss {vloss:.4f}  val AUROC {auc:.4f}{' *best' if improved else '      '}  "
+              f"| {ep_s:.0f}s/epoch, elapsed {fmt_time(elapsed)}, ~{fmt_time(left)} left", flush=True)
+        if a.patience and bad_epochs >= a.patience:
             print(f"early stop: no val AUROC gain for {a.patience} epochs")
             break
     train_s = time.perf_counter() - t_train
@@ -177,8 +186,8 @@ def parse(argv=None):
                    help="transfer models only; smallcnn is always trained from scratch")
     p.add_argument("--name", default=None, help="run name (default: <model>_<mode>)")
     p.add_argument("--size", type=int, default=384, help="input size; the 512 cache is downsized")
-    p.add_argument("--epochs", type=int, default=25)
-    p.add_argument("--patience", type=int, default=6)
+    p.add_argument("--epochs", type=int, default=25, help="same for every model")
+    p.add_argument("--patience", type=int, default=0, help="early stopping after N epochs without val gain (0 = off)")
     p.add_argument("--batch-size", type=int, default=32)
     p.add_argument("--lr", type=float, default=1e-3, help="head learning rate")
     p.add_argument("--backbone-lr-mult", type=float, default=0.1, help="backbone lr = lr x this (partial/finetune)")
@@ -187,7 +196,7 @@ def parse(argv=None):
     p.add_argument("--drop-conflicts", action="store_true", help="drop label-conflict duplicates from TRAIN only")
     p.add_argument("--no-tta", dest="tta", action="store_false", help="disable flip test-time augmentation")
     p.add_argument("--no-pretrained", action="store_true", help="random init (smoke test / ablation)")
-    p.add_argument("--workers", type=int, default=2)
+    p.add_argument("--workers", type=int, default=default_workers())
     p.add_argument("--limit", type=int, default=0, help="use only N training images (debugging)")
     p.add_argument("--seed", type=int, default=SEED)
     return p.parse_args(argv)

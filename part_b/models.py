@@ -1,9 +1,10 @@
 """Networks for Part B.
 
 SmallCNN          deep-learning baseline trained from scratch (no pretraining).
-build_transfer    ImageNet-pretrained EfficientNet-B0 with a new 1-logit head.
+build_transfer    ImageNet-pretrained ResNet-50 / ResNet-18 / EfficientNet-B0 with a new 1-logit head.
 set_mode          which layers are trained:
                     frozen     backbone fixed, only the new head learns (pretrained network = feature extractor)
+                    partial    last stage of the backbone + head
                     finetune   all layers, backbone at a lower learning rate than the head
 """
 import torch

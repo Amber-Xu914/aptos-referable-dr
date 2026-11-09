@@ -1,4 +1,4 @@
-""" Data loader and split check.
+"""1. Data loader and split check.
 
     python part_b/check_data.py                      # uses splits.csv and data/cache_clahe_512
     python part_b/check_data.py --cache /content/cache_clahe_512

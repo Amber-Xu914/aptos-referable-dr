@@ -198,38 +198,63 @@ def normalize(img):
     return np.ascontiguousarray(x.transpose(2, 0, 1))
 
 
-def preload(df, image_dir, size):
+def fmt_time(seconds):
+    """1234 -> '20m 34s'; 5000 -> '1h 23m'."""
+    seconds = int(round(seconds))
+    h, rem = divmod(seconds, 3600)
+    m, s = divmod(rem, 60)
+    return f"{h}h {m:02d}m" if h else f"{m}m {s:02d}s" if m else f"{s}s"
+
+
+def progress(iterable, desc="", total=None, leave=True, unit="it"):
+    """Progress bar in the terminal (tqdm); plain iteration if tqdm is not installed."""
+    try:
+        from tqdm.auto import tqdm
+    except ImportError:
+        return iterable
+    return tqdm(iterable, desc=desc, total=total, leave=leave, unit=unit, dynamic_ncols=True, mininterval=0.5)
+
+
+def preload(df, image_dir, size, desc="loading images"):
     """Read all images of `df` once into one uint8 array (N, size, size, 3).
 
-    About 1.3 GB for the whole dataset at 384 px. Reading 2,500 PNGs from Google Drive
-    every epoch is the main bottleneck on Colab, so this is done once per run.
+    About 1.3 GB for the whole dataset at 384 px. Decoding 2,500 PNGs every epoch
+    (worse still from Google Drive on Colab) would dominate training time, so this is done once per run.
     """
     arr = np.empty((len(df), size, size, 3), dtype=np.uint8)
-    for i, id_code in enumerate(df["id_code"]):
+    for i, id_code in enumerate(progress(df["id_code"], desc=desc, total=len(df), leave=False, unit="img")):
         arr[i] = read_rgb(Path(image_dir) / f"{id_code}.png", size)
     return arr
 
 
-def make_dataset(images, labels, train, seed=SEED):
-    import torch
-    from torch.utils.data import Dataset
+class FundusDataset:
+    """Map-style dataset over preloaded uint8 images: (normalised CHW tensor, label, index).
 
-    class FundusDataset(Dataset):
-        def __init__(self):
-            self.images, self.labels, self.train = images, np.asarray(labels, np.float32), train
-            self.seed = seed
+    Defined at module level so DataLoader workers can be started with 'spawn' (Windows/macOS).
+    Augmentation draws from a generator seeded from torch's per-process seed, which
+    torch.manual_seed fixes in the main process and DataLoader derives per worker, so a run
+    with the same --seed and worker count repeats exactly.
+    """
 
-        def __len__(self):
-            return len(self.images)
+    def __init__(self, images, labels, train):
+        self.images, self.labels, self.train = images, np.asarray(labels, np.float32), train
+        self.rng = None
 
-        def __getitem__(self, i):
-            img = self.images[i]
-            if self.train:
-                # Different random stream per worker and call; reproducible enough for a course project.
-                img = augment(img, np.random.default_rng())
-            return torch.from_numpy(normalize(img)), torch.tensor(self.labels[i]), i
+    def __len__(self):
+        return len(self.images)
 
-    return FundusDataset()
+    def __getitem__(self, i):
+        import torch
+        img = self.images[i]
+        if self.train:
+            if self.rng is None:
+                self.rng = np.random.default_rng(torch.initial_seed() % 2**32)
+            img = augment(img, self.rng)
+        return torch.from_numpy(normalize(img)), torch.tensor(self.labels[i]), i
+
+
+def make_dataset(images, labels, train):
+    return FundusDataset(images, labels, train)
 
 
 # ---------------------------------------------------------------------------
