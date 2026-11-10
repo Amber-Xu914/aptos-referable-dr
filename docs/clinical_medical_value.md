@@ -2,7 +2,7 @@
 
 Scope: patient, clinician and healthcare-system value; workflow integration; cost-benefit. Regulation and reimbursement are led by D. Only the facts needed for the workflow and cost arguments are summarised here (sections 4 and 5), so the two sections stay consistent.
 
-Facts checked against the sources listed at the end (November 2026). Items marked **(secondary source)** were found only in news coverage or search excerpts. Check them before putting them on a slide, or leave them out.
+Facts checked against the sources listed at the end (November 2026). Claims found only in news coverage or search excerpts have been left out.
 
 ---
 
@@ -11,7 +11,7 @@ Facts checked against the sources listed at the end (November 2026). Items marke
 - **The problem is missed screening, not missing technology.** About 1.3 million Australian adults have diabetes [1]. In the National Eye Health Survey, about 1 in 4 non-Indigenous and about 1 in 2 Indigenous people with diabetes were not examined within the recommended interval. Most did not know they needed an exam [3].
 - **Intended value:** a referable-DR check at the GP or Aboriginal Medical Service visit the patient is already attending. A negative result means routine rescreening. A positive or ungradable result means referral to an optometrist or ophthalmologist.
 - **Value depends on the pathway after the AI.** In an Australian real-world AI screening study, only about a third of referred patients were confirmed to attend [7]. Without a referral pathway, a true positive does not help the patient.
-- **Specificity drives cost.** Each false positive is an unnecessary specialist visit. In our validation results, specificity at 85% sensitivity ranges from 0.74 (simple colour baseline) to 0.94 (Part A's random forest). For 1,000 people screened, that is the difference between about 240 and about 55 unnecessary referrals (illustration in section 5).
+- **Specificity drives cost.** Each false positive is an unnecessary specialist visit. In our validation results, specificity at 85% sensitivity ranges from 0.74 (simple colour baseline) to 0.94 (Part A's random forest) and 0.96 (B's fine-tuned CNN). For 1,000 people screened, that is the difference between about 240 and about 33–55 unnecessary referrals (illustration in section 5).
 - **Published evidence for validated systems is positive.** An Australian model found AI screening in primary care cost-saving [9]. Patient acceptability was 94% in the Australian real-world study [7]. **Our student model is not validated and could not be used clinically** (see section 6).
 
 ---
@@ -69,13 +69,13 @@ Patient with diabetes attends GP / Aboriginal Medical Service (routine diabetes 
 
 Points to make:
 - **Who takes the photo:** MBS items 12325/12326 let trained staff perform the photography under the direction of the medical practitioner, who claims the item and stays responsible [5]. The software therefore fits GP clinics and Aboriginal Medical Services.
-- **Pharmacies and optometrists:** they cannot bill these GP items [5]. A pharmacy service would need a different funding model. A pharmacy pilot of a commercial AI DR screener has been announced in Australia, but no outcomes are published **(secondary source)** [12].
-- **Who sees the result:** the GP or AMS doctor, not the patient directly. This also matters for regulation: software that informs a health professional is generally classified lower than software that gives the diagnosis directly to the patient (D's section) **(secondary source, check TGA rule 4.5)** [10].
+- **Pharmacies and optometrists:** they cannot bill these GP items [5]. A pharmacy service would need a different funding model.
+- **Who sees the result:** the GP or AMS doctor, not the patient directly. Whether the software informs a clinician or gives the result straight to the patient also affects how it is regulated (see D's regulation section).
 - **The weak point is after the AI.** In [7], 28 patients were referred; only 15 could be contacted and 9 of them attended. Deployment needs:
   - referral tracking;
   - a booked appointment rather than a letter;
   - telehealth or visiting optometry for remote sites.
-- **Lessons from other deployments.** In Thailand, Google's system rejected many low-quality images taken in real clinics, frustrating nurses and creating extra follow-ups [13]. Image quality, lighting and connectivity must be planned for. An offline system, as used in [7], avoids the connectivity problem.
+- **Lessons from other deployments.** In a deployment study across 11 clinics in Thailand, the system's image-quality requirements clashed with the images that busy, resource-limited clinics could actually produce [10]. Image quality and the clinic environment must be planned for, not assumed. An offline system, as used in [7], also avoids depending on an internet connection.
 
 ## 5. Cost-benefit
 
@@ -99,8 +99,7 @@ Points to make:
   - US$62 with AI followed by human grading of AI positives (semi-automated);
   - US$66 fully automated;
   - US$77 with human graders only.
-  The semi-automated model saved about 20% of screening costs. The fully automated model saved less, reportedly because of more false-positive referrals **(secondary source)**.
-- **UK [11].** Automated grading was cost-saving when it replaced the first human grader. The break-even software price was only a few pounds per patient, so the cost being replaced is grader time.
+  The semi-automated model saved about 20% of screening costs.
 
 **Illustration: why specificity drives the cost.** This is an illustration, not an economic evaluation.
 
@@ -112,10 +111,11 @@ Assumptions:
 
 | Model (validation, spec at 85% sens) | Referable found (of 100) | Missed | False positives (of 900) | PPV | FP cost (MBS only) |
 |---|---|---|---|---|---|
-| Simple colour baseline (spec 0.735) | 85 | 15 | ≈ 238 | 26% | ≈ $19,000 |
+| Simple colour baseline (spec 0.735) | 85 | 15 | ≈ 239 | 26% | ≈ $19,000 |
 | Part A random forest (spec 0.939) | 85 | 15 | ≈ 55 | 61% | ≈ $4,400 |
+| Part B CNN, fine-tuned EfficientNet-B0 (spec 0.963) | 85 | 15 | ≈ 33 | 72% | ≈ $2,600 |
 
-At the same sensitivity, the better model cuts unnecessary referrals by about three-quarters. The PPV numbers also show that in a real community population, most positives from a weaker model would be false alarms. Specificities come from Part A's validation predictions (`python -m src.metrics`). Replace them with the final models' validation results, never test-set tuning.
+At the same sensitivity, the classical model cuts unnecessary referrals by about four-fifths and the CNN by about six-sevenths (239 → 33) compared with the simple baseline. The PPV numbers also show that in a real community population, most positives from a weaker model would be false alarms. Specificities come from the validation predictions (`python -m src.metrics`; CNN = B's final model, `results/part_b/preds_B_efficientnet_b0_finetune.csv`, seed 9027; figure made with `scripts/plot_clinical.py`). Test-set results are not used here.
 
 **Funding:** the photography service is already funded through MBS items 12325/12326: $59.75 per service, once every 12 months (Aboriginal and Torres Strait Islander patients) or 24 months (others) [5]. There is no separate MBS item for the AI software itself. How the software would be paid for (bundled into the service, a licence paid by the practice, or a new item) is an open question for D's reimbursement section.
 
@@ -125,12 +125,12 @@ Our software is a **student prototype**. It is not clinically validated and must
 
 1. **Shortcut learning.** Part A showed that grade 0 photos in APTOS come mainly from different cameras. A model using only image statistics reaches AUROC 0.89 without seeing lesions. We therefore also report grade 1 vs 2–4 AUROC, which is much lower (e.g. 0.86 for A's best model). A deployed system must work for the reason we think it works.
 2. **External validation.** All our results come from one dataset (APTOS 2019, India) with no patient IDs. Commercial systems lose performance on new data and cameras:
-   - in a US head-to-head test of 7 systems, sensitivity ranged from 51% to 86% [14];
+   - in a US head-to-head test of 7 systems, sensitivity ranged from 51% to 86% [11];
    - in the Australian study, specificity fell to 53% on one camera model [7].
    We would need a prospective study in Australian primary care, including Indigenous patients, on the camera actually deployed.
 3. **Reference standard.** The APTOS labels are a single grade per image. We found 30 duplicate groups with conflicting grades. A clinical study needs grading by an agreed protocol (e.g. adjudicated expert grading).
 4. **Ungradable images and macular oedema.** Our model has no image-quality output and does not assess diabetic macular oedema, which also needs referral. Both are required for a real screening service.
-5. **Benchmark.** IDx-DR, the first FDA-authorised autonomous AI diagnostic system, met pre-specified endpoints of at least 85% sensitivity and 82.5% specificity in a 10-site primary-care trial (87.2% / 90.7%) [15, 16]. That is the level of evidence a clinical claim needs.
+5. **Benchmark.** IDx-DR, authorised by the FDA as a new device type (De Novo), met pre-specified endpoints of at least 85% sensitivity and 82.5% specificity in a 10-site primary-care trial (87.2% / 90.7%) [12, 13]. That is the level of evidence a clinical claim needs.
 6. **Expertise needed:**
    - ophthalmologist or optometrist (reference grading, referral pathway);
    - primary-care and Aboriginal health partners (workflow, cultural safety, community acceptance);
@@ -151,10 +151,7 @@ Our software is a **student prototype**. It is not clinically validated and must
 7. Scheetz J, Koca D, McGuinness M, et al. Real-world artificial intelligence-based opportunistic screening for diabetic retinopathy in endocrinology and indigenous healthcare settings in Australia. *Sci Rep* 2021;11:15808. doi:10.1038/s41598-021-94178-5
 8. Xie Y, Nguyen QD, Hamzah H, et al. Artificial intelligence for teleophthalmology-based diabetic retinopathy screening in a national programme: an economic analysis modelling study. *Lancet Digit Health* 2020;2(5):e240–e249. doi:10.1016/S2589-7500(20)30060-1
 9. Hu W, Joseph S, Li R, et al. Population impact and cost-effectiveness of artificial intelligence-based diabetic retinopathy screening in people living with diabetes in Australia: a cost effectiveness analysis. *eClinicalMedicine* 2024;67:102387. doi:10.1016/j.eclinm.2023.102387
-10. Therapeutic Goods Administration. Classifying active medical devices in Australia, including software-based medical devices. https://www.tga.gov.au/resources/guidance/classifying-active-medical-devices-australia-including-software-based-medical-devices *(page could not be opened directly; check the rule wording)*
-11. Tufail A, Rudisill C, Egan C, et al. Automated diabetic retinopathy image assessment software: diagnostic accuracy and cost-effectiveness compared with human graders. *Ophthalmology* 2017;124(3):343–351.
-12. mivision. Optometrist Warehouse diabetic retinopathy AI study (June 2023). https://mivision.com.au/2023/06/optometrist-warehouse-diabetic-retinopathy-ai-study/ *(news report)*
-13. Beede E, Baylor E, Hersch F, et al. A human-centered evaluation of a deep learning system deployed in clinics for the detection of diabetic retinopathy. *Proc CHI* 2020. doi:10.1145/3313831.3376718
-14. Lee AY, Yanagihara RT, Lee CS, et al. Multicenter, head-to-head, real-world validation study of seven automated artificial intelligence diabetic retinopathy screening systems. *Diabetes Care* 2021;44(5):1168–1175. doi:10.2337/dc20-1877
-15. Abràmoff MD, Lavin PT, Birch M, Shah N, Folk JC. Pivotal trial of an autonomous AI-based diagnostic system for detection of diabetic retinopathy in primary care offices. *npj Digit Med* 2018;1:39. doi:10.1038/s41746-018-0040-6
-16. U.S. Food and Drug Administration. De Novo classification request for IDx-DR (DEN180001). https://www.accessdata.fda.gov/cdrh_docs/reviews/DEN180001.pdf
+10. Beede E, Baylor E, Hersch F, et al. A human-centered evaluation of a deep learning system deployed in clinics for the detection of diabetic retinopathy. *Proc CHI* 2020. doi:10.1145/3313831.3376718
+11. Lee AY, Yanagihara RT, Lee CS, et al. Multicenter, head-to-head, real-world validation study of seven automated artificial intelligence diabetic retinopathy screening systems. *Diabetes Care* 2021;44(5):1168–1175. doi:10.2337/dc20-1877
+12. Abràmoff MD, Lavin PT, Birch M, Shah N, Folk JC. Pivotal trial of an autonomous AI-based diagnostic system for detection of diabetic retinopathy in primary care offices. *npj Digit Med* 2018;1:39. doi:10.1038/s41746-018-0040-6
+13. U.S. Food and Drug Administration. De Novo classification request for IDx-DR (DEN180001). https://www.accessdata.fda.gov/cdrh_docs/reviews/DEN180001.pdf
