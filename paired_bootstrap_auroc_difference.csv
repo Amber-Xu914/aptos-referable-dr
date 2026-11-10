@@ -1,0 +1,7 @@
+Comparison,Subset,AUROC difference,95% CI low,95% CI high,Significant (CI excludes 0)
+"CNN (fine-tuned, seed 1) vs Part A RF",All grades,0.005,-0.003,0.014,no
+"CNN (fine-tuned, seed 1) vs Part A RF",Grade 1 vs 2-4,0.012,-0.03,0.053,no
+CNN vs baseline,All grades,0.083,0.058,0.11,yes
+CNN vs baseline,Grade 1 vs 2-4,0.266,0.171,0.359,yes
+Part A RF vs baseline,All grades,0.078,0.053,0.107,yes
+Part A RF vs baseline,Grade 1 vs 2-4,0.254,0.165,0.347,yes
