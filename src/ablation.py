@@ -136,6 +136,12 @@ def build_model(name, pretrained=True):
         m = torchvision.models.resnet18(weights=weights)
         m.fc = torch.nn.Linear(m.fc.in_features, 1)
         return m
+    if name == "efficientnet_b0":
+        # B's main model (fully fine-tuned); B trains it at 384 px, batch 32, lr 1e-4, 25 epochs
+        weights = torchvision.models.EfficientNet_B0_Weights.IMAGENET1K_V1 if pretrained else None
+        m = torchvision.models.efficientnet_b0(weights=weights)
+        m.classifier[1] = torch.nn.Linear(m.classifier[1].in_features, 1)
+        return m
     raise ValueError(f"unknown model {name!r}")
 
 
@@ -285,8 +291,9 @@ def main():
     exps = [e for e in EXPERIMENTS if not args.only or e.name in args.only]
     runs_path = RESULTS / f"ablation_runs{args.out_tag}.csv"
     runs = []
-    for exp in exps:
-        for seed in args.seeds:
+    # seeds outer: after the first seed there is already a complete table
+    for seed in args.seeds:
+        for exp in exps:
             print(f"\n=== {exp.name} ({exp.change}), seed {seed} ===")
             best = train_one(exp, seed, tr, va, args, device)
             write_preds(va, best["scores"], "val", f"C_{exp.name}",
