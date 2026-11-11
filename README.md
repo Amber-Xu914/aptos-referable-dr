@@ -102,6 +102,14 @@ python -m src.ablation --only E0_baseline --subset 100 --epochs 1 --out-tag _smo
 python -m src.metrics results/part_a/preds_A_rf_all.csv       # metrics for any prediction file (val rows)
 ```
 
+Figures for slides 6 and 9 (`results/part_c/figures/`):
+
+```bash
+python scripts/plot_ablation.py                       # ablation chart (validation)
+python scripts/plot_ablation.py --with-preprocessing --out results/part_c/figures/slide6_preprocessing_ablation.png
+python scripts/plot_clinical.py --split test          # workflow + unnecessary referrals per 1,000 (test, D's threshold rule)
+```
+
 Outputs: `results/part_c/ablation_table.csv` (mean over seeds), `results/part_c/ablation_runs.csv` (per seed), and validation predictions in `results/part_c/preds/` (group CSV format: `image_id, split, true_grade, model_score, model_type`). Checkpoints go to `outputs/part_c/` (not in git). Missing caches (`data/cache_rgb_512`, `data/cache_bengraham_512`) are built automatically from the raw images.
 
 Notes:
