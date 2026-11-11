@@ -11,7 +11,7 @@ Facts checked against the sources listed at the end (November 2026). Claims foun
 - **The problem is missed screening, not missing technology.** About 1.3 million Australian adults have diabetes [1]. In the National Eye Health Survey, about 1 in 4 non-Indigenous and about 1 in 2 Indigenous people with diabetes were not examined within the recommended interval. Most did not know they needed an exam [3].
 - **Intended value:** a referable-DR check at the GP or Aboriginal Medical Service visit the patient is already attending. A negative result means routine rescreening. A positive or ungradable result means referral to an optometrist or ophthalmologist.
 - **Value depends on the pathway after the AI.** In an Australian real-world AI screening study, only about a third of referred patients were confirmed to attend [7]. Without a referral pathway, a true positive does not help the patient.
-- **Specificity drives cost.** Each false positive is an unnecessary specialist visit. In our validation results, specificity at 85% sensitivity ranges from 0.74 (simple colour baseline) to 0.94 (Part A's random forest) and 0.96 (B's fine-tuned CNN). For 1,000 people screened, that is the difference between about 240 and about 33–55 unnecessary referrals (illustration in section 5).
+- **Specificity drives cost.** Each false positive is an unnecessary specialist visit. On the test set (threshold set for 85% sensitivity on validation), specificity is 0.80 for the simple colour baseline, 0.96 for Part A's random forest and 0.97 for B's fine-tuned CNN. For 1,000 people screened, that is the difference between about 183 and about 24–36 unnecessary referrals (illustration in section 5). The CNN and the classical pipeline perform similarly (D's paired bootstrap: AUROC difference +0.005, 95% CI −0.003 to +0.014).
 - **Published evidence for validated systems is positive.** An Australian model found AI screening in primary care cost-saving [9]. Patient acceptability was 94% in the Australian real-world study [7]. **Our student model is not validated and could not be used clinically** (see section 6).
 
 ---
@@ -106,16 +106,16 @@ Points to make:
 Assumptions:
 - 1,000 people screened.
 - 10% have referable DR. This is an assumed community prevalence; APTOS validation is 40%, which is far higher.
-- Threshold set at 85% sensitivity.
+- Threshold set for 85% sensitivity on validation and applied unchanged to test (the group's rule; D's official test run).
 - Each unnecessary referral costs one optometrist comprehensive diabetic exam, MBS item 10915 at $79.80 [6]. This ignores patient travel, time and any ophthalmology visit, so it underestimates the true cost.
 
-| Model (validation, spec at 85% sens) | Referable found (of 100) | Missed | False positives (of 900) | PPV | FP cost (MBS only) |
-|---|---|---|---|---|---|
-| Simple colour baseline (spec 0.735) | 85 | 15 | ≈ 239 | 26% | ≈ $19,000 |
-| Part A random forest (spec 0.939) | 85 | 15 | ≈ 55 | 61% | ≈ $4,400 |
-| Part B CNN, fine-tuned EfficientNet-B0 (spec 0.963) | 85 | 15 | ≈ 33 | 72% | ≈ $2,600 |
+| Model (test set) | Sens | Spec | Referable found (of 100) | Missed | Unnecessary referrals (of 900) | PPV | FP cost (MBS only) |
+|---|---|---|---|---|---|---|---|
+| Simple colour baseline | 0.90 | 0.797 | ≈ 90 | ≈ 10 | ≈ 183 | 33% | ≈ $14,600 |
+| Part A random forest | 0.84 | 0.960 | ≈ 84 | ≈ 16 | ≈ 36 | 70% | ≈ $2,900 |
+| Part B CNN, fine-tuned EfficientNet-B0 (mean of 3 seeds) | 0.83 | 0.973 | ≈ 83 | ≈ 17 | ≈ 24 | 78% | ≈ $1,900 |
 
-At the same sensitivity, the classical model cuts unnecessary referrals by about four-fifths and the CNN by about six-sevenths (239 → 33) compared with the simple baseline. The PPV numbers also show that in a real community population, most positives from a weaker model would be false alarms. Specificities come from the validation predictions (`python -m src.metrics`; CNN = B's final model, `results/part_b/preds_B_efficientnet_b0_finetune.csv`, seed 9027; figure made with `scripts/plot_clinical.py`). Test-set results are not used here.
+The classical pipeline and the CNN cut unnecessary referrals by about 80–87% compared with the simple baseline (183 → 36 and 24), while the baseline catches a few more referable cases (90 vs 83–84 per 100). The PPV numbers also show that in a real community population, most positives from a weaker model would be false alarms. Test sensitivity (0.83 for the CNN) came out slightly below the 85% target set on validation (CI 0.77–0.87), which is one reason external validation would be needed. Numbers match D's `per1000_at_10pct_prevalence.csv`; figure made with `python scripts/plot_clinical.py --split test` (`results/part_c/figures/referral_burden_test.png`). Validation version: `python scripts/plot_clinical.py`.
 
 **Funding:** the photography service is already funded through MBS items 12325/12326: $59.75 per service, once every 12 months (Aboriginal and Torres Strait Islander patients) or 24 months (others) [5]. There is no separate MBS item for the AI software itself. How the software would be paid for (bundled into the service, a licence paid by the practice, or a new item) is an open question for D's reimbursement section.
 
