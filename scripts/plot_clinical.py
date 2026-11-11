@@ -51,10 +51,11 @@ def arrow(ax, p, q):
                                  shrinkA=0, shrinkB=0))
 
 
-def workflow():
-    fig, ax = plt.subplots(figsize=(13, 5.2), facecolor=SURFACE)
+def workflow(slide=False):
+    """slide=True: no title and no weak-link note (the slide has its own), for slide 9a."""
+    fig, ax = plt.subplots(figsize=(13, 4.2 if slide else 5.2), facecolor=SURFACE)
     ax.set_xlim(0, 13)
-    ax.set_ylim(0, 5.2)
+    ax.set_ylim(1.0 if slide else 0, 5.2)
     ax.axis("off")
 
     y = 3.4
@@ -75,6 +76,11 @@ def workflow():
         ax.text(11.15, oy + 0.22, title, ha="left", va="bottom", fontsize=12, fontweight="bold", color=INK)
         ax.text(11.15, oy + 0.18, body, ha="left", va="top", fontsize=10, color=INK2, linespacing=1.3)
 
+    if slide:
+        ax.text(0.2, 1.35, "Photos taken by trained staff under GP direction can be billed to MBS items 12325 / 12326.",
+                fontsize=12, color=INK2, va="center")
+        fig.savefig(OUT / "workflow_slide.png", dpi=200, bbox_inches="tight", facecolor=SURFACE)
+        return
     ax.text(0.2, 1.3, "The weak link is after the AI", fontsize=12, fontweight="bold", color=INK, va="center")
     ax.text(0.2, 0.85, "In an Australian real-world AI screening study, only 9 of 28 referred patients "
             "(about 1 in 3) were confirmed to attend (Scheetz et al. 2021).",
@@ -165,5 +171,6 @@ if __name__ == "__main__":
     p.add_argument("--split", choices=["val", "test"], default="val")
     a = p.parse_args()
     workflow()
+    workflow(slide=True)
     referral_burden(a.split)
     print(f"Wrote figures to {OUT}")
