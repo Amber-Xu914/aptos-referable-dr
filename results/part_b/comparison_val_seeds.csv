@@ -1,0 +1,5 @@
+model_run,val_auroc_mean,val_auroc_std,val_auroc_count,sens_mean,sens_std,sens_count,spec_mean,spec_std,spec_count,f1_mean,f1_std,f1_count
+efficientnet_b0_finetune,0.9817,0.0008,3,0.9063,0.011,3,0.937,0.0062,3,0.9063,0.008,3
+hybrid_efficientnet_b0_imagenet,0.9763,,1,0.9,,1,0.933,,1,0.9,,1
+efficientnet_b0_frozen,0.9716,0.0003,3,0.9,0.0,3,0.913,0.0017,3,0.8867,0.0012,3
+smallcnn,0.9655,0.0017,3,0.9033,0.0029,3,0.893,0.0079,3,0.8763,0.0061,3

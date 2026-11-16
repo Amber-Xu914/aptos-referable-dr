@@ -1,0 +1,140 @@
+{
+  "run": "efficientnet_b0_finetune_s3",
+  "model_type": "B_efficientnet_b0_finetune_s3",
+  "model": "efficientnet_b0",
+  "mode": "finetune",
+  "img_size": 384,
+  "params_total": 4008829,
+  "params_trainable": 4008829,
+  "best_epoch": 9,
+  "epochs_run": 25,
+  "thresholds": {
+    "sens90": 0.13006426393985748,
+    "youden": 0.02437659725546837
+  },
+  "val": {
+    "auroc": 0.9821694625317294,
+    "auroc_ci": [
+      0.9717890945164696,
+      0.9901437851102148
+    ],
+    "at_sens90": {
+      "threshold": 0.13006426393985748,
+      "sensitivity": 0.9004524886877828,
+      "specificity": 0.9420731707317073,
+      "precision": 0.9128440366972477,
+      "npv": 0.9335347432024169,
+      "f1": 0.9066059225512529,
+      "accuracy": 0.9253187613843351,
+      "tp": 199,
+      "fp": 19,
+      "tn": 309,
+      "fn": 22
+    },
+    "at_youden": {
+      "threshold": 0.02437659725546837,
+      "sensitivity": 0.9547511312217195,
+      "specificity": 0.9176829268292683,
+      "precision": 0.8865546218487395,
+      "npv": 0.9678456591639871,
+      "f1": 0.9193899782135075,
+      "accuracy": 0.9326047358834244,
+      "tp": 211,
+      "fp": 27,
+      "tn": 301,
+      "fn": 10
+    },
+    "auroc_excl_label_conflict": 0.983925872668848
+  },
+  "runtime": {
+    "load_images_s": 12.85,
+    "train_s": 934.0,
+    "mean_epoch_s": 34.6,
+    "inference_ms_per_image": 6.25,
+    "tta": true,
+    "batch_size": 32,
+    "amp": true,
+    "peak_gpu_mem_gb": 4.33
+  },
+  "hardware": {
+    "python": "3.12.0",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "cpu_count": 24,
+    "colab": false,
+    "torch": "2.6.0+cu124",
+    "torchvision": "0.21.0+cu124",
+    "cuda": true,
+    "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+    "gpu": "NVIDIA GeForce RTX 3060",
+    "gpu_mem_gb": 12.9,
+    "cuda_version": "12.4",
+    "cudnn": 90100,
+    "sklearn": "1.9.1"
+  },
+  "args": {
+    "root": null,
+    "cache": "O:\\Uni\\aptos-referable-dr\\data\\cache_clahe_512",
+    "model": "efficientnet_b0",
+    "mode": "finetune",
+    "name": "efficientnet_b0_finetune_s3",
+    "size": 384,
+    "epochs": 25,
+    "patience": 0,
+    "batch_size": 32,
+    "lr": 0.001,
+    "backbone_lr_mult": 0.1,
+    "weight_decay": 0.0001,
+    "pos_weight": "auto",
+    "drop_conflicts": false,
+    "tta": true,
+    "no_pretrained": false,
+    "workers": 0,
+    "limit": 0,
+    "seed": 3
+  },
+  "gradcam": {
+    "val": {
+      "mean_cam_in_fov": 0.5585711002349854,
+      "mean_cam_centre": 0.05441807955503464,
+      "n": 549
+    },
+    "test": {
+      "mean_cam_in_fov": 0.5499205589294434,
+      "mean_cam_centre": 0.05441422387957573,
+      "n": 550
+    }
+  },
+  "test": {
+    "auroc": 0.9859897435897436,
+    "auroc_ci": [
+      0.9783556521802995,
+      0.9922396774183203
+    ],
+    "at_sens90": {
+      "threshold": 0.13006426393985748,
+      "sensitivity": 0.88,
+      "specificity": 0.9723076923076923,
+      "precision": 0.9565217391304348,
+      "npv": 0.9212827988338192,
+      "f1": 0.9166666666666666,
+      "accuracy": 0.9345454545454546,
+      "tp": 198,
+      "fp": 9,
+      "tn": 316,
+      "fn": 27
+    },
+    "at_youden": {
+      "threshold": 0.02437659725546837,
+      "sensitivity": 0.9333333333333333,
+      "specificity": 0.9384615384615385,
+      "precision": 0.9130434782608695,
+      "npv": 0.953125,
+      "f1": 0.9230769230769231,
+      "accuracy": 0.9363636363636364,
+      "tp": 210,
+      "fp": 20,
+      "tn": 305,
+      "fn": 15
+    }
+  }
+}

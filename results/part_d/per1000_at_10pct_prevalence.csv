@@ -1,0 +1,8 @@
+Model,Sensitivity,Specificity,Caught /100 referable,Missed /100,Unnecessary referrals /1000,PPV at 10%,Referrals /1000,"Cost of unnecessary referrals /1000 (AUD, $79.80 each)"
+CNN: EfficientNet-B0 fine-tuned (3 seeds),0.828,0.973,82.8,17.2,24.0,0.775,106.8,1915
+Hybrid CNN + features (1 run),0.844,0.969,84.4,15.6,27.7,0.753,112.1,2210
+Part A: 38 features + random forest,0.84,0.96,84.0,16.0,36.0,0.7,120.0,2873
+CNN: EfficientNet-B0 frozen (3 seeds),0.806,0.972,80.6,19.4,24.9,0.764,105.5,1989
+SmallCNN from scratch (3 seeds),0.847,0.948,84.7,15.3,47.1,0.643,131.8,3757
+Part A: lesion features only + RF,0.849,0.902,84.9,15.1,88.6,0.489,173.5,7072
+Baseline: colour + logistic regression,0.898,0.797,89.8,10.2,182.8,0.329,272.5,14585

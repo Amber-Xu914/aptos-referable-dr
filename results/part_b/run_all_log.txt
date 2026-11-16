@@ -1,0 +1,18 @@
+2026-11-10 02:31:25  Hardware notes                                              0.1 min  exit 0
+2026-11-10 02:31:26  Data loader and split check                                 0.0 min  exit 0
+2026-11-10 02:48:49  Train smallcnn_s1                                          17.4 min  exit 0
+2026-11-10 03:03:14  Train efficientnet_b0_frozen_s1                            14.4 min  exit 0
+2026-11-10 03:19:17  Train efficientnet_b0_finetune_s1                          16.1 min  exit 0
+2026-11-10 03:36:15  Train smallcnn_s2                                          17.0 min  exit 0
+2026-11-10 03:50:42  Train efficientnet_b0_frozen_s2                            14.5 min  exit 0
+2026-11-10 04:06:44  Train efficientnet_b0_finetune_s2                          16.0 min  exit 0
+2026-11-10 04:23:41  Train smallcnn_s3                                          16.9 min  exit 0
+2026-11-10 04:38:08  Train efficientnet_b0_frozen_s3                            14.5 min  exit 0
+2026-11-10 04:54:08  Train efficientnet_b0_finetune_s3                          16.0 min  exit 0
+2026-11-10 04:54:52  Hybrid: CNN features -> PCA -> classifier                   0.7 min  exit 0
+2026-11-10 04:54:55  Compare runs on validation                                  0.0 min  exit 0
+2026-11-10 04:55:19  Grad-CAM on the winner (validation)                         0.4 min  exit 0
+2026-11-10 04:56:42  Final test evaluation (thresholds from validation)          1.4 min  exit 0
+2026-11-10 04:57:05  Hybrid on test                                              0.4 min  exit 0
+2026-11-10 04:57:30  Grad-CAM on the winner (test)                               0.4 min  exit 0
+2026-11-10 04:57:32  Refresh comparison and runtime notes                        0.0 min  exit 0

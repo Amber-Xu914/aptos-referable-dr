@@ -1,0 +1,73 @@
+{
+  "model": "B_efficientnet_b0_finetune_s1",
+  "n_val": 549,
+  "n_test": 550,
+  "prevalence_referable_test": 0.4090909090909091,
+  "thresholds_from_validation": {
+    "main": 0.68183,
+    "triage_low": 0.0297,
+    "triage_high": 0.6491300000000001
+  },
+  "test_AUROC": 0.9817982905982906,
+  "test_AUROC_grade1_vs_2to4": 0.9034156378600824,
+  "test_specificity_at_90pct_sensitivity": 0.9507692307692308,
+  "test_metrics_at_main_threshold": {
+    "threshold": 0.68183,
+    "TP": 185,
+    "FP": 10,
+    "TN": 315,
+    "FN": 40,
+    "sensitivity": 0.8222222222222222,
+    "specificity": 0.9692307692307692,
+    "PPV_precision": 0.9487179487179487,
+    "NPV": 0.8873239436619719,
+    "F1": 0.8809523809523809,
+    "referral_rate": 0.35454545454545455
+  },
+  "test_95CI_bootstrap": {
+    "AUROC": [
+      0.9725982187380507,
+      0.9891378552840826
+    ],
+    "sensitivity": [
+      0.7706329035457476,
+      0.8721606475716065
+    ],
+    "specificity": [
+      0.9484730330831248,
+      0.986672131147541
+    ],
+    "PPV_precision": [
+      0.9141414141414141,
+      0.9768832529034311
+    ],
+    "NPV": [
+      0.8530079422875608,
+      0.9189985949887933
+    ],
+    "F1": [
+      0.8470457192778101,
+      0.9124548658172947
+    ]
+  },
+  "calibration": {
+    "ECE": 0.057843126906055566,
+    "Brier": 0.06391340009827914
+  },
+  "test_without_label_conflicts": {
+    "n": 532,
+    "n_excluded": 18,
+    "AUROC": 0.9803724058245812,
+    "threshold": 0.68183,
+    "TP": 169,
+    "FP": 10,
+    "TN": 313,
+    "FN": 40,
+    "sensitivity": 0.8086124401913876,
+    "specificity": 0.9690402476780186,
+    "PPV_precision": 0.9441340782122905,
+    "NPV": 0.886685552407932,
+    "F1": 0.8711340206185567,
+    "referral_rate": 0.33646616541353386
+  }
+}

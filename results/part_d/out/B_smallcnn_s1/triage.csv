@@ -1,0 +1,4 @@
+band,n,fraction_of_images,n_truly_referable,fraction_truly_referable
+confident negative (no referral),257,0.4672727272727273,5,0.019455252918287938
+confident positive (refer),187,0.34,177,0.946524064171123
+uncertain (human grader),106,0.19272727272727272,43,0.4056603773584906

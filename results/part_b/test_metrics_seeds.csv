@@ -1,0 +1,7 @@
+model_run,threshold_rule,auroc_mean,auroc_std,auroc_count,sensitivity_mean,sensitivity_std,sensitivity_count,specificity_mean,specificity_std,specificity_count,precision_mean,precision_std,precision_count,f1_mean,f1_std,f1_count,accuracy_mean,accuracy_std,accuracy_count
+efficientnet_b0_finetune,sens90,0.984,0.0021,3,0.8815,0.0025,3,0.962,0.0094,3,0.9416,0.0137,3,0.9105,0.0063,3,0.9291,0.0055,3
+efficientnet_b0_finetune,youden,0.984,0.0021,3,0.9393,0.0068,3,0.9282,0.0108,3,0.9007,0.0128,3,0.9195,0.0035,3,0.9327,0.0037,3
+efficientnet_b0_frozen,sens90,0.9817,0.0002,3,0.9052,0.0068,3,0.9405,0.0089,3,0.9135,0.0114,3,0.9093,0.0027,3,0.9261,0.0028,3
+efficientnet_b0_frozen,youden,0.9817,0.0002,3,0.9511,0.0,3,0.9026,0.0078,3,0.8712,0.009,3,0.9094,0.0048,3,0.9224,0.0046,3
+smallcnn,sens90,0.9762,0.0007,3,0.9185,0.0112,3,0.9159,0.0077,3,0.8833,0.0089,3,0.9005,0.0055,3,0.917,0.0046,3
+smallcnn,youden,0.9762,0.0007,3,0.9437,0.0206,3,0.8831,0.0303,3,0.8494,0.0315,3,0.8936,0.0086,3,0.9079,0.01,3
