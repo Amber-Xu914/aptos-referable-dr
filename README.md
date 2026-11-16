@@ -102,10 +102,20 @@ python -m src.ablation --only E0_baseline --subset 100 --epochs 1 --out-tag _smo
 python -m src.metrics results/part_a/preds_A_rf_all.csv       # metrics for any prediction file (val rows)
 ```
 
+Figures for slides 6 and 9 (`results/part_c/figures/`):
+
+```bash
+python scripts/plot_ablation.py                       # ablation chart (validation)
+python scripts/plot_ablation.py --with-preprocessing --out results/part_c/figures/slide6_preprocessing_ablation.png
+python scripts/plot_clinical.py --split test          # workflow + unnecessary referrals per 1,000 (test, D's threshold rule)
+```
+
 Outputs: `results/part_c/ablation_table.csv` (mean over seeds), `results/part_c/ablation_runs.csv` (per seed), and validation predictions in `results/part_c/preds/` (group CSV format: `image_id, split, true_grade, model_score, model_type`). Checkpoints go to `outputs/part_c/` (not in git). Missing caches (`data/cache_rgb_512`, `data/cache_bengraham_512`) are built automatically from the raw images.
 
 Notes:
-- The CNN is a stand-in (ImageNet-pretrained ResNet-18, 224 px) until B's model is ready. **B:** add your network to `build_model()` in `src/ablation.py` and run with `--model <name>`.
+- The final ablation uses B's main model and settings: `--model efficientnet_b0 --size 384 --batch-size 32 --lr 1e-4 --epochs 25` (ImageNet weights, all layers fine-tuned), seeds 1, 2, 3. An earlier pilot with ResNet-18 at 224 px (1 seed, 10 epochs) is kept in `results/part_c/resnet18_pilot/`. Other networks can be added to `build_model()` in `src/ablation.py`.
+- Final result (mean of 3 seeds, grade 1 vs 2–4 AUROC): E0 0.912, E1 0.902, E2 0.895, E3 0.893, E3b 0.896, E4 0.885. No change beat the baseline; paired bootstrap differences vs E0 all include zero except Ben Graham (−0.028, 95% CI −0.056 to 0.000). Figure: `results/part_c/figures/ablation_auroc.png`.
+- Difference from B's main model: B uses lr 1e-3 for the classification head (1e-4 for the pretrained layers) and a frozen-backbone warm-up; the ablation fine-tunes all layers at 1e-4 from the start. B's model matches the E3 row (val AUROC 0.982 vs 0.980; grade 1 vs 2–4 0.897 vs 0.893).
 - The best epoch is chosen by validation AUROC, so absolute validation numbers are slightly optimistic; the comparison between rows is fair because every row is treated the same way.
 - Overall AUROC is inflated by the camera shortcut (grade 0 photos come mostly from different cameras, see Part A). Judge the improvements mainly by **`auroc_g1_vs_ref`**.
 - The test split is never used here. `--predict-test <experiment>` writes test predictions for the frozen final model only, without computing metrics (D evaluates them once).
